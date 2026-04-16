@@ -42,7 +42,7 @@ The simulator is divided into four highly specialized subsystems:
 ### Setup Steps
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/cubesat-hil-simulator.git](https://github.com/yourusername/cubesat-hil-simulator.git)
+   git clone https://github.com/mtepenner/cubesat-hil-simulator.git
    cd cubesat-hil-simulator
    ```
 2. Flash the firmware to your microcontroller using the provided Makefile:
