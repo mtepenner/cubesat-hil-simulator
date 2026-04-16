@@ -1,0 +1,61 @@
+cubesat-hil-simulator/
+│
+├── .github/                             # Automation for testing and firmware compilation
+│   └── workflows/
+│       ├── build-firmware.yml           # Compiles C/C++ using PlatformIO CLI
+│       ├── test-physics.yml             # Runs unit tests on the orbital models
+│       └── build-ui.yml
+│
+├── simulation_engine/                   # Python + FastAPI: The Physics & Environment Model
+│   ├── app/
+│   │   ├── api/                         # Endpoints to start/pause/step the simulation
+│   │   ├── core/                        # Simulation clock sync and state management
+│   │   ├── models/
+│   │   │   ├── orbit.py                 # Calculates position using Skyfield (SGP4/TLEs)
+│   │   │   ├── environment.py           # Calculates Eclipse state, Solar Flux, IGRF Magnetic Field
+│   │   │   └── dynamics.py              # Rigid body dynamics (rotational momentum)
+│   │   └── main.py                      # FastAPI server running the simulation loop
+│   ├── requirements.txt                 # Includes skyfield, numpy, scipy, fastapi
+│   └── Dockerfile
+│
+├── hardware_bridge/                     # Go: Low-latency Serial/USB I/O Daemon
+│   ├── cmd/
+│   │   └── daemon/
+│   │       └── main.go                  # Entry point: connects to Python via WebSockets/gRPC, and Hardware via UART
+│   ├── internal/
+│   │   ├── comms/
+│   │   │   ├── serial.go                # Raw byte-level communication with the USB/TTY port
+│   │   │   └── protocol.go              # Framing logic (e.g., COBS encoding) to ensure packet integrity
+│   │   └── translator/
+│   │       └── state_mapper.go          # Maps Python float values to simulated raw ADC register values
+│   ├── go.mod
+│   └── go.sum
+│
+├── firmware/                            # C/C++: The actual physical flight computer code
+│   ├── lib/                             # Hardware abstraction layers (HAL)
+│   ├── src/
+│   │   ├── main.cpp                     # FreeRTOS entry point
+│   │   ├── systems/
+│   │   │   ├── adcs.cpp                 # Attitude Determination & Control System logic
+│   │   │   ├── eps.cpp                  # Electrical Power System (Battery management/Safe mode)
+│   │   │   └── telemetry.cpp            # Packages hardware state into byte arrays to send back
+│   │   └── drivers/
+│   │       └── simulated_sensors.cpp    # Reads from the Go bridge instead of physical I2C sensors
+│   └── platformio.ini                   # Build configuration for your specific microcontroller (e.g., STM32, ESP32)
+│
+├── mission_control/                     # React + TypeScript: The testing dashboard
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Spacecraft3D.tsx         # Three.js render showing physical rotation based on hardware telemetry
+│   │   │   ├── EnvironmentHUD.tsx       # Shows the "Truth" state from the Python simulation
+│   │   │   └── HardwareState.tsx        # Shows the "Believed" state reported by the physical hardware
+│   │   ├── hooks/
+│   │   │   └── useHILStream.ts          # Synchronizes both the Sim and Hardware data streams
+│   │   ├── App.tsx
+│   │   └── index.tsx
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── docker-compose.yml                   # Runs the Python Sim, Go Bridge, and React UI locally
+├── Makefile                             # Commands for flashing firmware and starting the daemon
+└── README.md
