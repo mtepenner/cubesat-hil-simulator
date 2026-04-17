@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  simulation:
+    build: ./simulation_engine
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  bridge:
+    build: ./hardware_bridge
+    depends_on:
+      simulation:
+        condition: service_healthy
+    environment:
+      - SIM_WS_URL=ws://simulation:8000/api/sim/ws
+      - SERIAL_PORT=
+    command: ["--mock", "--ws", "ws://simulation:8000/api/sim/ws"]
+
+  dashboard:
+    build: ./mission_control
+    ports:
+      - "3000:3000"
+    depends_on:
+      simulation:
+        condition: service_healthy

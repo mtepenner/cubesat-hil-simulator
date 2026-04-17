@@ -12,7 +12,7 @@ A comprehensive Hardware-in-the-Loop (HIL) simulation platform designed for Cube
 - [License](#-license)
 
 ## 🚀 Features
-* **High-Fidelity Physics Engine:** A Python and FastAPI backend that calculates precise orbital positions using Skyfield (SGP4/TLEs), alongside environmental factors like eclipses, solar flux, and the IGRF magnetic field.
+* **High-Fidelity Physics Engine:** A Python and FastAPI backend that calculates precise orbital positions using Skyfield (SGP4/TLEs), alongside environmental factors like eclipses, solar flux, and a geomagnetic dipole field model.
 * **Low-Latency Hardware Bridge:** A Go daemon that seamlessly translates simulated state data into raw ADC register values, communicating with the physical USB/TTY ports via raw byte-level UART. 
 * **Flight-Ready Firmware:** FreeRTOS-based C/C++ firmware featuring critical subsystems like Attitude Determination & Control (ADCS) and Electrical Power Systems (EPS). It interfaces with the Go bridge via simulated sensor drivers.
 * **Interactive Mission Control:** A React and TypeScript dashboard equipped with a Three.js 3D render of the spacecraft. It actively compares the "Truth" state from the Python simulation against the "Believed" state reported by the physical telemetry.
@@ -27,7 +27,7 @@ The simulator is divided into four highly specialized subsystems:
 
 ## 🛠️ Technologies Used
 * **Simulation:** Python, FastAPI, Skyfield, NumPy, SciPy
-* **Bridge & Comms:** Go (Golang), WebSockets, gRPC, UART
+* **Bridge & Comms:** Go (Golang), WebSockets, UART, COBS encoding
 * **Firmware:** C/C++, FreeRTOS, PlatformIO
 * **Frontend UI:** React, TypeScript, Three.js
 * **Deployment & CI/CD:** Docker, Docker Compose, GitHub Actions
@@ -36,8 +36,9 @@ The simulator is divided into four highly specialized subsystems:
 
 ### Prerequisites
 * Docker and Docker Compose installed.
+* Go 1.21+ (for building the hardware bridge locally).
 * PlatformIO installed (for compiling and flashing firmware).
-* A compatible microcontroller (e.g., STM32, ESP32) connected via USB.
+* An ESP32 development board connected via USB (for HIL mode; mock mode works without hardware).
 
 ### Setup Steps
 1. Clone the repository:
@@ -52,6 +53,13 @@ The simulator is divided into four highly specialized subsystems:
 3. Boot up the Python simulation, Go bridge, and React UI locally using Docker Compose:
    ```bash
    docker-compose up --build -d
+   ```
+4. Or run individual components locally:
+   ```bash
+   make sim          # Start the simulation engine on port 8000
+   make bridge       # Start the Go bridge in mock mode
+   make dashboard    # Start the React dashboard on port 3000
+   make test         # Run all unit tests
    ```
 
 ## 🎮 Usage

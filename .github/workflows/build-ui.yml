@@ -1,0 +1,29 @@
+name: Build UI
+
+on:
+  push:
+    paths:
+      - 'mission_control/**'
+  pull_request:
+    paths:
+      - 'mission_control/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: cd mission_control && npm install
+
+      - name: Type check
+        run: cd mission_control && npx tsc --noEmit
+
+      - name: Build
+        run: cd mission_control && npm run build
