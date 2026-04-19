@@ -21,6 +21,7 @@ func COBSEncode(data []byte) []byte {
 
 	// Process input in blocks separated by zero bytes
 	idx := 0
+	lastWasZero := false
 	for idx < len(data) {
 		// Find the next zero byte (or end of data)
 		blockStart := idx
@@ -36,17 +37,25 @@ func COBSEncode(data []byte) []byte {
 			encoded = append(encoded, byte(blockLen+1))
 			encoded = append(encoded, data[blockStart:blockEnd]...)
 			idx = blockEnd + 1
+			lastWasZero = true
 		} else if blockLen == 254 {
 			// Block reached max length (254 non-zero bytes)
 			encoded = append(encoded, 0xFF)
 			encoded = append(encoded, data[blockStart:blockEnd]...)
 			idx = blockEnd
+			lastWasZero = false
 		} else {
 			// End of data
 			encoded = append(encoded, byte(blockLen+1))
 			encoded = append(encoded, data[blockStart:blockEnd]...)
 			idx = blockEnd
+			lastWasZero = false
 		}
+	}
+
+	// If data ended with a zero, emit overhead byte for the empty trailing group
+	if lastWasZero {
+		encoded = append(encoded, 0x01)
 	}
 
 	// Append frame delimiter
